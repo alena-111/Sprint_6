@@ -1,9 +1,8 @@
 import allure
 import pytest
 
-from order_locators import OrderPage
-
-BASE_URL = 'https://qa-scooter.praktikum-services.ru/'
+from pages.order_page import OrderPage
+from locators.order_page_locators import OrderPageLocators as locator
 
 
 class TestScooterOrder:
@@ -24,51 +23,54 @@ class TestScooterOrder:
     def test_create_order(self, driver, order_button, name, second_name,
                           address, metro, phone_number, date, rental_period,
                           scooter_color, comment):
-        driver.get(BASE_URL)
-
         order_page = OrderPage(driver)
+        order_page.go_to_base_url()
         order_page.wait_for_load_main_page()
-        params = {'button_order_top': order_page.button_order_top,
-                  'button_order': order_page.button_order,
-                  'Сокольники': order_page.sokolniki,
-                  'Бульвар Рокоссовского': order_page.rokossovski,
-                  'пятеро суток': order_page.five_days_order,
-                  'сутки': order_page.one_days_order,
-                  'черный жемчуг': order_page.black_pearl_checkbox,
-                  'серая безысходность': order_page.grey_checkbox}
+        params = {'button_order_top': locator.button_order_top,
+                  'button_order': locator.button_order,
+                  'Сокольники': locator.sokolniki,
+                  'Бульвар Рокоссовского': locator.rokossovski,
+                  'пятеро суток': locator.five_days_order,
+                  'сутки': locator.one_days_order,
+                  'черный жемчуг': locator.black_pearl_checkbox,
+                  'серая безысходность': locator.grey_checkbox}
         # параметризируем кнопку заказать order_top
-        order_page.click_on_button_order(driver, params[order_button])
-        assert driver.find_element(
-            *order_page.for_whom_scooter).is_displayed()
+        order_page.click_on_button_order(params[order_button])
+        order_page.element_displayed(locator.for_whom_scooter)
         # персональные данные
         order_page.input_personal_data(name, second_name, address,
                                        params[metro],
                                        phone_number)
-        order_page.click_on_button_next(driver, order_page.next_button)
-        assert driver.find_element(
-            *order_page.order_final_button).is_displayed()
+        order_page.click_on_button_next()
+        order_page.element_displayed(locator.order_final_button)
         # данные заказа
-        order_page.input_renta_data(driver, date, params[rental_period],
+        order_page.input_renta_data(date, params[rental_period],
                                     params[scooter_color],
                                     comment)
-        order_page.click_on_button_create_order(driver,
-                                                order_page.button_order)
-        assert driver.find_element(
-            *order_page.yes_button).is_displayed()
+        order_page.click_on_button_create_order()
+        order_page.element_displayed(locator.yes_button)
 
-        order_page.click_on_yes_button(driver,
-                                       order_page.yes_button)
+        order_page.click_on_yes_button()
 
-        assert driver.find_element(
-            *order_page.order_status).is_displayed()
+        order_page.element_displayed(locator.order_status)
 
-        order_page.click_on_order_status(driver)
+        order_page.click_on_order_status()
 
-        order_page.click_on_scooter(driver)
-        assert driver.current_url == BASE_URL
+        order_page.click_on_scooter()
 
-        order_page.click_on_yandex(driver)
+        order_page.current_url_match()
 
-        order_page.swich_between_tabs(driver)
+        order_page.click_on_yandex()
 
-        assert driver.current_url == order_page.dzen_url
+        order_page.swich_between_tabs()
+
+        assert order_page.current_url_match(locator.dzen_url)
+
+    @allure.title("Переход на главную страницу при нажатии на Самокат")
+    @allure.description(
+        'Нажинаем на самокат, переходим на главную страницу')
+    def test_click_on_scooter(self, driver):
+        order_page = OrderPage(driver)
+        order_page.go_to_custom_url('order')
+        order_page.click_on_scooter()
+        assert order_page.current_url_match()

@@ -1,10 +1,7 @@
-import allure
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions
-from selenium.webdriver.support.wait import WebDriverWait
 
 
-class MainPage:
+class MainPageLocators:
     important_questions = [By.XPATH, '//div[text()="Вопросы о важном"]']
     first_question = [By.ID, 'accordion__heading-0']
     second_question = [By.ID, 'accordion__heading-1']
@@ -31,26 +28,3 @@ class MainPage:
                       '//p[text()="Да, пока самокат не привезли. Штрафа не будет, объяснительной записки тоже не попросим. Все же свои."]']
     eighth_answer = [By.XPATH,
                      '//p[text()="Да, обязательно. Всем самокатов! И Москве, и Московской области."]']
-
-    @allure.step('Иницилизация драйвера')
-    def __init__(self, driver):
-        self.driver = driver
-
-    @allure.step('Загружаем страницу с важными вопросами')
-    def wait_for_load_main_page(self):
-        WebDriverWait(self.driver, 3).until(
-            expected_conditions.visibility_of_element_located(
-                self.important_questions))
-
-    @allure.step('Нажимаем на вопрос')
-    def click_on_question(self, driver, question):
-        element = self.driver.find_element(*question)
-        driver.execute_script("arguments[0].scrollIntoView();", element)
-        WebDriverWait(driver, 10).until(
-            expected_conditions.element_to_be_clickable(element))
-        element.click()
-        return element
-
-    @allure.step('Сопоставляем текст ответа')
-    def check_text(self, text):
-        assert self.driver.find_element(*text).is_displayed()
